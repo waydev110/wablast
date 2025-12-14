@@ -88,7 +88,10 @@ Setup Apache proxy (requires VPS/dedicated, not shared hosting)
 **Verification:**
 ```bash
 # Test connection
-php test-nodejs.php
+php public/test-nodejs.php
+
+# Or visit browser
+https://wablast.inilaku.com/test-nodejs.php
 
 # Or manual curl test
 curl http://localhost:3100
@@ -364,7 +367,7 @@ bash health-check.sh
 | Run migrations | `php artisan migrate --force` |
 | Start scheduler | `php artisan schedule:run` |
 | Start campaign queue | `php artisan start:blast` |
-| Test Node.js | `php test-nodejs.php` |
+| Test Node.js | `php public/test-nodejs.php` or visit in browser |
 | Fix storage | `bash fix-permissions.sh` |
 | Fix Node.js connection | `bash fix-nodejs-connection.sh` |
 

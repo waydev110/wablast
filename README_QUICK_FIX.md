@@ -50,7 +50,7 @@ After fixes, test:
 
 ```bash
 # Quick test
-php test-nodejs.php
+php public/test-nodejs.php
 
 # Or visit browser
 https://wablast.inilaku.com/test-nodejs.php
@@ -92,7 +92,7 @@ Or check detailed guide: `TROUBLESHOOTING_CHECKLIST.md`
 | `fix-storage.php` | Fix cache path (web) | Visit in browser |
 | `fix-permissions.sh` | Fix cache path (SSH) | `bash fix-permissions.sh` |
 | `fix-nodejs-connection.sh` | Fix Node.js only | `bash fix-nodejs-connection.sh` |
-| `test-nodejs.php` | Test connection | `php test-nodejs.php` |
+| `test-nodejs.php` | Test connection | `php public/test-nodejs.php` (CLI) or visit in browser |
 | `health-check.sh` | Full diagnostics | `bash health-check.sh` |
 | `TROUBLESHOOTING_CHECKLIST.md` | Detailed guide | Read for complex issues |
 | `DEPLOYMENT_GUIDE.md` | Full deployment docs | Complete reference |

@@ -2,13 +2,13 @@
 /**
  * Test Node.js Connection
  * Run via browser: https://wablast.inilaku.com/test-nodejs.php
- * Or command line: php test-nodejs.php
+ * Or command line: php public/test-nodejs.php
  */
 
-require __DIR__.'/vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
 // Load .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/..');
 $dotenv->load();
 
 $waUrlServer = $_ENV['WA_URL_SERVER'] ?? 'http://localhost';
