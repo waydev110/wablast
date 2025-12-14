@@ -77,9 +77,19 @@ class ScanController extends Controller
         try {
             $device = $request->device;
             
+            // Build Node.js URL (subdomain or localhost)
+            $waUrlServer = rtrim(env('WA_URL_SERVER'), '/');
+            $portNode = env('PORT_NODE');
+            
+            if (!empty($portNode) && (strpos($waUrlServer, 'localhost') !== false || strpos($waUrlServer, '127.0.0.1') !== false)) {
+                $nodeUrl = $waUrlServer . ':' . $portNode;
+            } else {
+                $nodeUrl = $waUrlServer;
+            }
+            
             $response = Http::withOptions(['verify' => false])
                 ->timeout(5)
-                ->post(env('WA_URL_SERVER') . ':' . env('PORT_NODE') . '/start-connection', [
+                ->post($nodeUrl . '/start-connection', [
                     'device' => $device
                 ]);
             
@@ -100,9 +110,19 @@ class ScanController extends Controller
         try {
             $device = $request->device;
             
+            // Build Node.js URL (subdomain or localhost)
+            $waUrlServer = rtrim(env('WA_URL_SERVER'), '/');
+            $portNode = env('PORT_NODE');
+            
+            if (!empty($portNode) && (strpos($waUrlServer, 'localhost') !== false || strpos($waUrlServer, '127.0.0.1') !== false)) {
+                $nodeUrl = $waUrlServer . ':' . $portNode;
+            } else {
+                $nodeUrl = $waUrlServer;
+            }
+            
             $response = Http::withOptions(['verify' => false])
                 ->timeout(5)
-                ->post(env('WA_URL_SERVER') . ':' . env('PORT_NODE') . '/connect-via-code', [
+                ->post($nodeUrl . '/connect-via-code', [
                     'device' => $device
                 ]);
             
