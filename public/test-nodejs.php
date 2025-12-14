@@ -11,9 +11,18 @@ require __DIR__.'/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/..');
 $dotenv->load();
 
-$waUrlServer = $_ENV['WA_URL_SERVER'] ?? 'http://localhost';
-$portNode = $_ENV['PORT_NODE'] ?? '3100';
-$nodeUrl = $waUrlServer . ':' . $portNode;
+$waUrlServer = $_ENV['WA_URL_SERVER'] ?? getenv('WA_URL_SERVER') ?: 'http://localhost';
+$portNode = $_ENV['PORT_NODE'] ?? getenv('PORT_NODE') ?: '';
+
+// Remove trailing slash from URL
+$waUrlServer = rtrim($waUrlServer, '/');
+
+// Build URL: add port only for localhost setup
+if (!empty($portNode) && (strpos($waUrlServer, 'localhost') !== false || strpos($waUrlServer, '127.0.0.1') !== false)) {
+    $nodeUrl = $waUrlServer . ':' . $portNode;
+} else {
+    $nodeUrl = $waUrlServer; // Subdomain/external URL doesn't need port
+}
 
 echo "====================================\n";
 echo "Testing Node.js Connection\n";
@@ -21,8 +30,13 @@ echo "====================================\n\n";
 
 echo "Configuration:\n";
 echo "  WA_URL_SERVER: $waUrlServer\n";
-echo "  PORT_NODE: $portNode\n";
+echo "  PORT_NODE: " . ($portNode ?: '(not used - subdomain mode)') . "\n";
 echo "  Full URL: $nodeUrl\n\n";
+
+// Detect setup type
+$isLocalhost = (strpos($waUrlServer, 'localhost') !== false || strpos($waUrlServer, '127.0.0.1') !== false);
+$setupType = $isLocalhost ? 'Internal Localhost (PM2)' : 'External/Subdomain';
+echo "  Setup Type: $setupType\n\n";
 
 // Test 1: Check if Node.js process is running
 echo "Test 1: Check Node.js Process\n";
@@ -135,10 +149,29 @@ if ($allPassed) {
     echo "  3. Scan QR code\n";
 } else {
     echo "✗ Some tests FAILED!\n\n";
+    
+    // Specific fix for external URL
+    if (strpos($waUrlServer, 'localhost') === false && strpos($waUrlServer, '127.0.0.1') === false) {
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        echo "🔧 FIX REQUIRED: Change to localhost\n";
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+        echo "Your .env is using: $waUrlServer\n";
+        echo "This won't work on shared hosting!\n\n";
+        echo "SOLUTION:\n";
+        echo "  1. Edit .env file (via cPanel File Manager or SSH)\n";
+        echo "  2. Find line: WA_URL_SERVER=$waUrlServer\n";
+        echo "  3. Change to: WA_URL_SERVER=http://localhost\n";
+        echo "  4. Save file\n";
+        echo "  5. Visit: https://wablast.inilaku.com/clear-cache\n";
+        echo "  6. Re-test: https://wablast.inilaku.com/test-nodejs.php\n\n";
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    }
+    
     echo "Quick Fixes:\n";
     echo "  1. Run: pm2 start server.js --name mpwa-whatsapp\n";
     echo "  2. Update .env: WA_URL_SERVER=http://localhost\n";
     echo "  3. Clear cache: php artisan config:clear && php artisan config:cache\n";
+    echo "     Or visit: https://wablast.inilaku.com/clear-cache\n";
     echo "  4. Check PM2 status: pm2 status\n";
     echo "  5. View PM2 logs: pm2 logs mpwa-whatsapp\n";
 }

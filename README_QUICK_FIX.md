@@ -5,9 +5,60 @@
 
 ---
 
-## ⚡ One-Click Fix (RECOMMENDED)
+## ⚡ Quick Fixes
 
-Upload `quick-fix.sh` to server, then run:
+### Option A: Via Web Browser (Tanpa SSH) 🌐
+
+**Paling mudah untuk shared hosting!**
+
+#### Prerequisites: Setup Node.js di Subdomain
+
+**PENTING:** Node.js harus di subdomain terpisah (baca: `SETUP_NODEJS_SUBDOMAIN.md`)
+
+Contoh:
+- Laravel: `https://wablast.inilaku.com`
+- Node.js: `https://node.wablast.inilaku.com` ⭐
+
+---
+
+#### Quick Fix Steps:
+
+1. **Upload 3 files ke folder `public/`:**
+   - `fix-storage.php` → `public/fix-storage.php`
+   - `fix-env.php` → `public/fix-env.php` ⭐
+   - `test-nodejs.php` → `public/test-nodejs.php`
+
+2. **Fix Error #1 (Storage):**
+   ```
+   https://wablast.inilaku.com/fix-storage.php
+   ```
+   Klik tombol "Fix Storage" → Done ✅
+
+3. **Fix Error #2 (Node.js Connection):**
+   ```
+   https://wablast.inilaku.com/fix-env.php
+   ```
+   Input Node.js URL: `https://node.wablast.inilaku.com`
+   Klik "Update .env Configuration" → Done ✅
+
+4. **Clear cache:**
+   ```
+   https://wablast.inilaku.com/clear-cache
+   ```
+
+5. **Test everything:**
+   ```
+   https://wablast.inilaku.com/test-nodejs.php
+   ```
+   Semua test harus PASS ✅
+
+**Total waktu: 5 menit!** 🎉
+
+---
+
+### Option B: Via SSH (One-Click Fix) 🚀
+
+Upload `quick-fix.sh` ke root, then run:
 
 ```bash
 chmod +x quick-fix.sh
@@ -86,16 +137,20 @@ Or check detailed guide: `TROUBLESHOOTING_CHECKLIST.md`
 
 ## 📋 File Overview
 
-| File | Purpose | Usage |
-|------|---------|-------|
-| `quick-fix.sh` | **One-click fix (both errors)** | `bash quick-fix.sh` ⭐ |
-| `fix-storage.php` | Fix cache path (web) | Visit in browser |
-| `fix-permissions.sh` | Fix cache path (SSH) | `bash fix-permissions.sh` |
-| `fix-nodejs-connection.sh` | Fix Node.js only | `bash fix-nodejs-connection.sh` |
-| `test-nodejs.php` | Test connection | `php public/test-nodejs.php` (CLI) or visit in browser |
-| `health-check.sh` | Full diagnostics | `bash health-check.sh` |
-| `TROUBLESHOOTING_CHECKLIST.md` | Detailed guide | Read for complex issues |
-| `DEPLOYMENT_GUIDE.md` | Full deployment docs | Complete reference |
+| File | Location | Purpose | Usage |
+|------|----------|---------|-------|
+| `fix-env.php` | `public/` | **Fix .env (Node.js)** | Visit `https://wablast.inilaku.com/fix-env.php` ⭐⭐⭐ |
+| `fix-storage.php` | `public/` | Fix cache path | Visit `https://wablast.inilaku.com/fix-storage.php` ⭐⭐ |
+| `test-nodejs.php` | `public/` | Test connection | Visit `https://wablast.inilaku.com/test-nodejs.php` ⭐ |
+| `quick-fix.sh` | Root | One-click fix (SSH) | `bash quick-fix.sh` |
+| `fix-permissions.sh` | Root | Fix cache path (SSH) | `bash fix-permissions.sh` |
+| `fix-nodejs-connection.sh` | Root | Fix Node.js (SSH) | `bash fix-nodejs-connection.sh` |
+| `health-check.sh` | Root | Full diagnostics | `bash health-check.sh` |
+| `FILE_STRUCTURE.md` | Docs | File organization | Read this |
+| `TROUBLESHOOTING_CHECKLIST.md` | Docs | Detailed guide | Complex issues |
+| `DEPLOYMENT_GUIDE.md` | Docs | Full deployment | Complete reference |
+
+**Note:** Files di `public/` bisa diakses via browser (tanpa SSH). Files di root hanya via SSH.
 
 ---
 
