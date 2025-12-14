@@ -80,6 +80,7 @@ class ScanController extends Controller
             // Build Node.js URL (subdomain or localhost)
             $waUrlServer = rtrim(env('WA_URL_SERVER'), '/');
             $portNode = env('PORT_NODE');
+            dd($waUrlServer,$portNode);
             
             if (!empty($portNode) && (strpos($waUrlServer, 'localhost') !== false || strpos($waUrlServer, '127.0.0.1') !== false)) {
                 $nodeUrl = $waUrlServer . ':' . $portNode;
@@ -92,6 +93,7 @@ class ScanController extends Controller
                 ->post($nodeUrl . '/start-connection', [
                     'device' => $device
                 ]);
+                dd($response->json());
             
             return response()->json($response->json());
         } catch (\Exception $e) {
