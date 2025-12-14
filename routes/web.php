@@ -82,6 +82,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function() {
 
 		Route::get('/scan/{number:body}',[ScanController::class,'scan'])->name('scan');
 		Route::get('/code/{number:body}',[ScanController::class,'code'])->name('connect-via-code');
+		
+		// HTTP Polling endpoints for shared hosting compatibility
+		Route::get('/poll-connection/{device}', [ScanController::class, 'pollConnection'])->name('poll.connection');
+		Route::post('/start-connection-http', [ScanController::class, 'startConnection'])->name('start.connection.http');
+		Route::post('/start-connection-code-http', [ScanController::class, 'startConnectionViaCode'])->name('start.connection.code.http');
 
 		Route::get('/autoreply',[AutoreplyController::class,'index'])->name('autoreply')->middleware('permissions');
 		Route::post('/autoreply',[AutoreplyController::class,'store'])->name('autoreply')->middleware('permissions');

@@ -24,9 +24,9 @@ const setStatus = (device, status) => {
     }
 }
 
-function dbQuery(query) {
+function dbQuery(query, params = []) {
     return new Promise(data => {
-        db.query(query, (err, res) => {
+        db.query(query, params, (err, res) => {
             if (err) throw err;
             try {
                 data(res);

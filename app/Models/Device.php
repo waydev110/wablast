@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 class Device extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'body', 'webhook', 'status', 'message_sent'];
+    protected $fillable = ['user_id', 'body', 'webhook', 'status', 'message_sent', 'qr_code', 'connection_data', 'qr_generated_at', 'pairing_code'];
 
     public function user()
     {

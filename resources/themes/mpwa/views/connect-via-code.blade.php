@@ -84,119 +84,123 @@
     </div>
 
 </x-layout-dashboard>
-<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
-    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous">
-</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // if subscription not expired
+    // HTTP POLLING MODE - PAIRING CODE (SHARED HOSTING COMPATIBLE)
     const is_expired_subscription = '{{ Auth::user()->is_expired_subscription }}';
     if (!is_expired_subscription) {
-        let socket;
         let device = '{{ $number->body }}';
-        if ('{{ env('TYPE_SERVER') }}' === 'hosting') {
-            socket = io();
-        } else {
-            socket = io('{{ env('WA_URL_SERVER') }}', {
-                transports: ['websocket', 'polling', 'flashsocket']
+        let pollingInterval = null;
+        let isConnected = false;
+        
+        // Start connection via pairing code
+        function startConnectionViaCode() {
+            $.ajax({
+                url: '{{ route("start.connection.code.http") }}',
+                method: 'POST',
+                data: {
+                    device: device,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    console.log('Pairing code generation initiated:', response);
+                    startPolling();
+                },
+                error: function(xhr) {
+                    console.error('Failed to start connection:', xhr);
+                    $('.statusss').html(`<button class="btn btn-danger" type="button" disabled>
+                        {{__('Failed to connect to server')}}
+                    </button>`);
+                }
             });
         }
-
-
-        socket.emit('ConnectViaCode', '{{ $number->body }}')
-        socket.on('code', ({
-            token,
-            data,
-            message
-        }) => {
-            if (token == device) {
-                let code = data
-                $('.imageee').html(` <h2 >${code}</h2>`)
-                let count = 0;
-                $('.statusss').html(`  <button class="btn btn-warning" type="button" disabled>
-                                                     <span class="" role="status" aria-hidden="true"></span>
-                                                   ${message}
-                                                 </button>`)
-
+        
+        // Poll connection status every 2 seconds
+        function startPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            pollingInterval = setInterval(function() {
+                $.ajax({
+                    url: '/{{ LaravelLocalization::getCurrentLocale() }}/poll-connection/' + device,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.status && response.data) {
+                            handleConnectionData(response.data);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Polling error:', xhr);
+                    }
+                });
+            }, 2000); // Poll every 2 seconds
+        }
+        
+        // Handle connection data from polling
+        function handleConnectionData(data) {
+            // If pairing code is available
+            if (data.pairing_code && !isConnected) {
+                $('.imageee').html(`<h2 class="text-primary">${data.pairing_code}</h2>`);
+                $('.statusss').html(`<button class="btn btn-warning" type="button" disabled>
+                    <span class="" role="status" aria-hidden="true"></span>
+                    {{__('Enter this code in WhatsApp')}}
+                </button>`);
             }
-
-        })
-
-
-        socket.on('connection-open', ({
-            token,
-            user,
-            ppUrl
-        }) => {
-            if (token == device) {
-
-                $('.name').html(`{{__('Name :')}} ${user.name}`)
-                $('.number').html(`{{__('Number :')}} ${user.id}`)
-                $('.device').html(`{{__('Device / Token : Not detected -')}} ${token}`)
-                $('.imageee').html(` <img src="${ppUrl}" height="300px" alt="">`)
-                $('.statusss').html(`  <button class="btn btn-success" type="button" disabled>
-                                                    <span class="" role="status" aria-hidden="true"></span>
-                                                   {{__('Connected')}}
-                                                </button>`)
-                $('.logoutbutton').html(` <button class="btn btn-danger" class="logout"  id="logout"  onclick="logout({{ $number->body }})">
-                                                   {{__('Logout')}}
-                                               </button>`)
+            
+            // If device is connected
+            if (data.device_status === 'Connected' && data.connection_data) {
+                isConnected = true;
+                clearInterval(pollingInterval);
+                
+                const connData = data.connection_data;
+                $('.name').html(`{{__('Name :')}} ${connData.name || 'N/A'}`);
+                $('.number').html(`{{__('Number :')}} ${connData.id || device}`);
+                $('.device').html(`{{__('Device / Token : Not detected -')}} ${device}`);
+                
+                if (connData.ppUrl) {
+                    $('.imageee').html(`<img src="${connData.ppUrl}" height="300px" alt="Profile">`);
+                }
+                
+                $('.statusss').html(`<button class="btn btn-success" type="button" disabled>
+                    <span class="" role="status" aria-hidden="true"></span>
+                    {{__('Connected')}}
+                </button>`);
+                
+                $('.logoutbutton').html(`<button class="btn btn-danger" class="logout" id="logout" onclick="logout()">
+                    {{__('Logout')}}
+                </button>`);
             }
-        })
-
-        socket.on('Unauthorized', ({
-            token
-        }) => {
-            if (token == device) {
-                $('.statusss').html(`  <button class="btn btn-danger" type="button" disabled>
-                                                    <span class="" role="status" aria-hidden="true"></span>
-                                                   {{__('Unauthorized')}}
-                                                </button>`)
-            }
-
-        })
-        socket.on('message', ({
-            token,
-            message
-        }) => {
-            if (token == device) {
-                $('.statusss').html(`  <button class="btn btn-success" type="button" disabled>
-                                                    <span class="" role="status" aria-hidden="true"></span>
-                                                   ${message}
-                                                </button>`);
-                //if there is text connection close in message
-                if (message.includes('Connection closed')) {
-                    // count 5 second
-                    let count = 5;
-                    //set interval
-                    let interval = setInterval(() => {
-                        //if count is 0
-                        if (count == 0) {
-                            //clear interval
-                            clearInterval(interval);
-                            //reload page
+        }
+        
+        // Logout function
+        function logout() {
+            $.ajax({
+                url: '{{ env("WA_URL_SERVER") }}:{{ env("PORT_NODE") }}/logout-device-http',
+                method: 'POST',
+                data: { device: device },
+                success: function() {
+                    location.reload();
+                },
+                error: function() {
+                    // Fallback to Laravel logout
+                    $.ajax({
+                        url: '/{{ LaravelLocalization::getCurrentLocale() }}/home',
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            deviceId: '{{ $number->id }}'
+                        },
+                        success: function() {
                             location.reload();
                         }
-                        //change text
-                        $('.statusss').html(`  <button class="btn btn-success" type="button" disabled>
-                                                    <span class="" role="status" aria-hidden="true"></span>
-                                                   ${message} {{__('in')}} ${count} {{__('second')}}
-                                                </button>`);
-                        //count down
-                        count--;
-                    }, 1000);
-
+                    });
                 }
-            }
-
-
-
-        });
-
-
-
-
-        function logout(device) {
-            socket.emit('LogoutDevice', device)
+            });
         }
+        
+        // Start connection on page load
+        startConnectionViaCode();
+        
+        // Make logout function global
+        window.logout = logout;
     }
 </script>
