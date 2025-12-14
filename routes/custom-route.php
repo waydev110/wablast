@@ -27,7 +27,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function() {
 	})->name('schedule-cron');
 
 	Route::get('/migrate', function () {
-	return Artisan::call('migrate');
+	Artisan::call('migrate', ['--force' => true]);
+	return 'Migration completed successfully!';
 	})->name('migrate');
 
 	Route::get('/view-clear', function () {
